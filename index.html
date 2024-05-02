@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classifier API</title>
+</head>
+<body>
+    <h1>Classifier API</h1>
+    <p>This page allows you to interact with the Classifier API.</p>
+    <div>
+        <label for="newdata">Enter New Data:</label>
+        <textarea id="newdata" rows="5" cols="50"></textarea>
+    </div>
+    <button onclick="predict()">Predict</button>
+    <div id="results"></div>
+
+    <script>
+        function predict() {
+            var newdata = document.getElementById("newdata").value;
+            var requestData = {
+                newdata: JSON.parse("[" + newdata + "]")
+            };
+
+            fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function displayResults(data) {
+            var probabilities = data.probabilities;
+            var prediction = data.prediction;
+            var resultsDiv = document.getElementById("results");
+
+            resultsDiv.innerHTML = "<h2>Prediction Results:</h2>";
+            resultsDiv.innerHTML += "<p>Prediction: " + prediction + "</p>";
+            resultsDiv.innerHTML += "<p>Probabilities:</p>";
+            resultsDiv.innerHTML += "<ul>";
+            probabilities.forEach(function(prob, index) {
+                resultsDiv.innerHTML += "<li>Class " + index + ": " + prob + "</li>";
+            });
+            resultsDiv.innerHTML += "</ul>";
+        }
+    </script>
+</body>
+</html>

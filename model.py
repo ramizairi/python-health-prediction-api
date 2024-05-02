@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 
 
 
@@ -8,7 +11,7 @@ dftest = pd.read_csv('Testing.csv')
 dftrain = pd.read_csv('Training.csv')
 dftrain.drop('Unnamed: 133', axis=1, inplace=True)
 columns = list(dftrain.columns)
-    
+
 X_train = dftrain.iloc[:, :-1].values 
 y_train = dftrain.iloc[:, 132].values 
 X_test = dftest.iloc[:, :-1].values 
@@ -35,13 +38,18 @@ y_train = dftrain.iloc[:, 33].values
 X_test = dftest.iloc[:, :-1].values 
 y_test = dftest.iloc[:, 33].values 
 
-classifierDT = DecisionTreeClassifier(splitter='best', criterion='entropy', min_samples_leaf=2)
-classifierDT.fit(X_train, y_train)
-y_predDT = classifierDT.predict(X_test)
+svm_pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # Mise à l'échelle des données
+    ('svm', SVC(kernel='rbf', C=1.0, gamma='scale', probability=True))  # Classificateur SVM
+])
+svm_pipeline.fit(X_train, y_train)
 newdata = [[0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-probaDT = classifierDT.predict_proba(newdata)
-probaDT.round(5) 
-predDT = classifierDT.predict(newdata)
-print(predDT)
+# Prédisez avec le modèle SVM
+proba_svm = svm_pipeline.predict_proba(newdata)
+pred_svm = svm_pipeline.predict(newdata)
+
+# Affichez les résultats
+print(pred_svm)
+print(proba_svm.round(5))
